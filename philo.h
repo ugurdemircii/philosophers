@@ -11,7 +11,7 @@
 typedef struct s_sphilo
 {
     int philo_id;
-    long last_eat_time;
+    unsigned long last_eat_time;
     int eat_count;
     pthread_t thread;
     pthread_mutex_t *left_fork;
@@ -28,6 +28,7 @@ typedef struct s_data
     int time_to_sleep;
     int number_of_philo;
     int must_eat;  
+    int dead_flag;
     unsigned long  start_time;
     pthread_mutex_t *forks;
     pthread_mutex_t print_mutex;
