@@ -12,10 +12,15 @@ unsigned long ft_get_time(void)
 
 void safe_mutex_print(char *str,t_philo *philo)
 {
+	pthread_mutex_lock(&philo->data->dead_mutex);
     if (philo->data->dead_flag)
+	{
+		pthread_mutex_unlock(&philo->data->dead_mutex);
         return ;
+	}
+	pthread_mutex_unlock(&philo->data->dead_mutex);
 	pthread_mutex_lock(&philo->data->print_mutex);
-	printf("%d %s\n",philo->philo_id,str);
+	printf("%lu %d %s\n",ft_get_time() - philo->data->start_time ,philo->philo_id,str);
 	pthread_mutex_unlock(&philo->data->print_mutex);
 }
 void think_and_sleep(t_philo *philo)
@@ -28,10 +33,20 @@ void think_and_sleep(t_philo *philo)
 
 void take_fork_and_eat(t_philo *philo)
 {
-	pthread_mutex_lock(philo->left_fork);
-	safe_mutex_print("has taken a fork",philo);
-	pthread_mutex_lock(philo->right_fork);
-	safe_mutex_print("has taken a fork",philo);
+	if (philo->philo_id % 2)
+	{
+		pthread_mutex_lock(philo->left_fork);
+		safe_mutex_print("has taken a fork",philo);
+		pthread_mutex_lock(philo->right_fork);
+		safe_mutex_print("has taken a fork",philo);
+	}
+	else
+	{
+		pthread_mutex_lock(philo->right_fork);
+		safe_mutex_print("has taken a fork",philo);
+		pthread_mutex_lock(philo->left_fork);
+		safe_mutex_print("has taken a fork",philo);
+	}
 	pthread_mutex_lock(&philo->eat_mutex);
 	philo->last_eat_time = ft_get_time();
 	philo->eat_count++;
@@ -90,14 +105,17 @@ void *is_anyone_dead(void *arg)
 		}
 		while(++i < simulation->number_of_philo)
 		{
+			pthread_mutex_lock(&simulation->philo[i].eat_mutex);
 			if (ft_get_time() - simulation->philo[i].last_eat_time >= (unsigned long)simulation->time_to_die)
 			{
+				pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
 				pthread_mutex_lock(&simulation->dead_mutex);
 				simulation->dead_flag = 1;
 				pthread_mutex_unlock(&simulation->dead_mutex);
-				printf("%d is dead\n",simulation->philo[i].philo_id);
+				printf("%lu %d is dead\n",ft_get_time() - simulation->start_time,simulation->philo[i].philo_id);
 				return NULL;
 			}
+			pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
 		}
 	}
 }
@@ -110,8 +128,16 @@ void *philo_loop(void *arg)
 
 	philo = (t_philo *)arg;
 	simulation = philo->data;
-	while (!simulation->dead_flag)
+	// pthread_mutex_lock(&simulation->dead_mutex);
+	while (1)
 	{
+		pthread_mutex_lock(&simulation->dead_mutex);
+		if (simulation->dead_flag == 1)
+		{
+			pthread_mutex_unlock(&simulation->dead_mutex);
+			break;
+		}
+		pthread_mutex_unlock(&simulation->dead_mutex);
 		life_of_philo(philo);
 	}
 	return NULL;
@@ -129,7 +155,7 @@ void start_thread(t_data *simulation)
 	while (++i < simulation->number_of_philo)
 	{
 		pthread_create(&simulation->philo[i].thread,NULL,philo_loop,&simulation->philo[i]);
-		usleep(1500);
+		// usleep(500);
 	}
 }
 
@@ -139,7 +165,7 @@ void init_philo(t_data *simulation)
 	t_philo *philo;
 
 	i = -1;
-	simulation->philo = malloc(sizeof(t_philo ) *simulation->number_of_philo);
+	simulation->philo = calloc(1,sizeof(t_philo ) *simulation->number_of_philo);
 	philo = simulation->philo;
 	while (++i < simulation->number_of_philo)
 	{
@@ -154,24 +180,35 @@ void init_philo(t_data *simulation)
 		}
 		else
 		{
-			philo[i].left_fork = &simulation->forks[(i + 1) % simulation->number_of_philo];
 			philo[i].right_fork = &simulation->forks[i];
+			philo[i].left_fork = &simulation->forks[(i + 1) % simulation->number_of_philo];
 		}
 		pthread_mutex_init(&philo[i].eat_mutex,NULL);
 	}
 	return ;
 }
 
+void one_philo(t_data *simulation)
+{
+	printf("%lu 1 has taken a fork\n",ft_get_time() - simulation->start_time);
+	usleep(simulation->time_to_die * 1000);
+	printf("%lu 1 is died\n",ft_get_time() - simulation->start_time);
+	free(simulation);
+	exit (0);
+}
+
 t_data *init_data(t_data *simulation,char **argv)
 {
-	simulation = malloc(sizeof(t_data));
+	simulation = calloc(1,sizeof(t_data));
 	simulation->start_time = ft_get_time();
 	simulation->number_of_philo = atoi(argv[1]);
 	simulation->time_to_die = atoi(argv[2]);
+	if (simulation->number_of_philo == 1)
+		one_philo(simulation);
 	simulation->time_to_eat = atoi(argv[3]);
 	simulation->time_to_sleep = atoi(argv[4]);
 	simulation->dead_flag = 0;
-	simulation->forks = malloc(sizeof(pthread_mutex_t)* simulation->number_of_philo);
+	simulation->forks = calloc(1,sizeof(pthread_mutex_t)* simulation->number_of_philo);
 	pthread_mutex_init(simulation->forks,NULL);
 	pthread_mutex_init(&simulation->dead_mutex,NULL);
 	if (argv[5])
@@ -198,9 +235,7 @@ int main(int argc, char **argv)
 		printf("wrong input\n");
 		exit(1);
 	}
-
 	simulation = init_data(simulation,argv);
-	printf("%lu\n",simulation->start_time);
 	pthread_create(&check_dead,NULL,is_anyone_dead,simulation);
 	start_thread(simulation);
 	while (i < simulation->number_of_philo)
@@ -209,4 +244,13 @@ int main(int argc, char **argv)
 		i++;
 	}
 	pthread_join(check_dead,NULL);
+    for (i = 0; i < simulation->number_of_philo; i++) {
+        pthread_mutex_destroy(&simulation->philo[i].eat_mutex);
+        pthread_mutex_destroy(&simulation->forks[i]);
+    }
+    pthread_mutex_destroy(&simulation->dead_mutex);
+    pthread_mutex_destroy(&simulation->print_mutex);
+    free(simulation->philo);
+    free(simulation->forks);
+    free(simulation);
 }
