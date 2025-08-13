@@ -49,6 +49,31 @@ void life_of_philo(t_philo *philo)
 	take_fork_and_eat(philo);
 	think_and_sleep(philo);
 }
+
+int check_must_eat_count(t_data *simulation)
+{
+	int i;
+	int check_everyone;
+
+	i = -1;
+	check_everyone = 0;
+	while(++i < simulation->number_of_philo)
+	{
+		pthread_mutex_lock(&simulation->philo[i].eat_mutex);
+		if (simulation->philo[i].eat_count >= simulation->must_eat)
+			check_everyone++;
+		pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
+	}
+	if (check_everyone == simulation->number_of_philo)
+	{
+		pthread_mutex_lock(&simulation->dead_mutex);
+		simulation->dead_flag = 1;
+		pthread_mutex_unlock(&simulation->dead_mutex);
+		return (1);
+	}
+	return (0);
+
+}
 void *is_anyone_dead(void *arg)
 {
 	t_data *simulation;
@@ -57,19 +82,22 @@ void *is_anyone_dead(void *arg)
 	simulation = (t_data *)arg;
 	while (1)
 	{
-		i = 0;
-		while(i < simulation->number_of_philo)
+		i = -1;
+		if (simulation->must_eat != 0)
+		{
+			if (check_must_eat_count(simulation))
+				return NULL;
+		}
+		while(++i < simulation->number_of_philo)
 		{
 			if (ft_get_time() - simulation->philo[i].last_eat_time >= (unsigned long)simulation->time_to_die)
 			{
 				pthread_mutex_lock(&simulation->dead_mutex);
 				simulation->dead_flag = 1;
 				pthread_mutex_unlock(&simulation->dead_mutex);
-				// safe_mutex_print("is dead",&simulation->philo[i]);
 				printf("%d is dead\n",simulation->philo[i].philo_id);
 				return NULL;
 			}
-			i++;
 		}
 	}
 }
@@ -101,7 +129,7 @@ void start_thread(t_data *simulation)
 	while (++i < simulation->number_of_philo)
 	{
 		pthread_create(&simulation->philo[i].thread,NULL,philo_loop,&simulation->philo[i]);
-		usleep(1000);
+		usleep(1500);
 	}
 }
 
@@ -163,10 +191,18 @@ int main(int argc, char **argv)
 
 
 	i = 0;
+	if (argc != 5 && argc != 6)
+		exit(1);
+	if (input_parse(argv) == -1)
+	{
+		printf("wrong input\n");
+		exit(1);
+	}
+
 	simulation = init_data(simulation,argv);
 	printf("%lu\n",simulation->start_time);
-	start_thread(simulation);
 	pthread_create(&check_dead,NULL,is_anyone_dead,simulation);
+	start_thread(simulation);
 	while (i < simulation->number_of_philo)
 	{
 		pthread_join(simulation->philo[i].thread,NULL);

@@ -36,6 +36,6 @@ typedef struct s_data
     t_philo *philo;
 }   t_data;
 
-
+int input_parse(char **argv);
 
 #endif
