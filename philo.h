@@ -16,6 +16,8 @@ typedef struct s_sphilo
     pthread_t thread;
     pthread_mutex_t *left_fork;
     pthread_mutex_t *right_fork;
+    int left_forkk;
+    int right_forkk;
     pthread_mutex_t  eat_mutex;
     struct s_data *data;
 } t_philo;
