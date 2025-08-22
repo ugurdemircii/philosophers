@@ -9,13 +9,22 @@ unsigned long ft_get_time(void)
 	time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 	return (time);
 }
-void ft_usleep(int time_ms)
+void ft_usleep(int time_ms,t_philo *philo)
 {
 	long start_time;
 
 	start_time = ft_get_time();
 	while (ft_get_time() - start_time < time_ms)
-			usleep(100);
+	{
+		pthread_mutex_lock(&philo->data->dead_mutex);
+		if (philo->data->dead_flag == 1)
+		{
+			pthread_mutex_unlock(&philo->data->dead_mutex);	
+			break ; 
+		}
+		pthread_mutex_unlock(&philo->data->dead_mutex);
+		usleep(100);
+	}
 	return;
 }
 
@@ -36,8 +45,9 @@ void safe_mutex_print(char *str,t_philo *philo)
 void think_and_sleep(t_philo *philo)
 {
 	safe_mutex_print("is sleeping",philo);
-	ft_usleep(philo->data->time_to_sleep);
+	ft_usleep(philo->data->time_to_sleep,philo);
 	safe_mutex_print("is thinking",philo);
+	usleep(500);
 }
 
 
@@ -45,22 +55,22 @@ void take_fork_and_eat(t_philo *philo)
 {
 	if (philo->philo_id % 2 == 0)
 	{
-		pthread_mutex_lock(&philo->data->forks[philo->right_forkk]);			
-		safe_mutex_print("has taken a fork",philo);
 		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
+		safe_mutex_print("has taken a fork",philo);
+		pthread_mutex_lock(&philo->data->forks[philo->right_forkk]);			
 		safe_mutex_print("has taken a fork",philo);
 	}
 	else
 	{
-		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
-		safe_mutex_print("has taken a fork",philo);
 		pthread_mutex_lock(&philo->data->forks[philo->right_forkk]);			
+		safe_mutex_print("has taken a fork",philo);
+		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
 		safe_mutex_print("has taken a fork",philo);
 	}
 	pthread_mutex_lock(&philo->eat_mutex);
 	safe_mutex_print("is eating",philo);
 	philo->last_eat_time = ft_get_time();
-	ft_usleep(philo->data->time_to_eat);
+	ft_usleep(philo->data->time_to_eat,philo);
 	philo->eat_count++;
 	pthread_mutex_unlock(&philo->eat_mutex);
     pthread_mutex_unlock(&philo->data->forks[philo->right_forkk]);
@@ -122,12 +132,14 @@ void *is_anyone_dead(void *arg)
 				pthread_mutex_lock(&simulation->dead_mutex);
 				simulation->dead_flag = 1;
 				pthread_mutex_unlock(&simulation->dead_mutex);
+				pthread_mutex_lock(&simulation->print_mutex);
 				printf("%lu %d is dead\n",ft_get_time() - simulation->start_time,simulation->philo[i].philo_id);
+				pthread_mutex_unlock(&simulation->print_mutex);
 				return NULL;
 			}
 			pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
 		}
-		// usleep(500);
+		usleep(500);
 	}
 }
 
@@ -135,7 +147,6 @@ void *philo_loop(void *arg)
 {
 	t_philo *philo;
 	t_data *simulation;
-	pthread_t check_dead;
 
 	philo = (t_philo *)arg;
 	simulation = philo->data;
@@ -187,7 +198,7 @@ void init_philo(t_data *simulation)
 		philo[i].data = simulation;
 		philo[i].left_forkk = i;
 		philo[i].right_forkk = (i + 1) % simulation->number_of_philo;
-		printf("left%d right%d\n",philo[i].left_forkk,philo[i].right_forkk);
+		// printf("left%d right%d\n",philo[i].left_forkk,philo[i].right_forkk);
 		pthread_mutex_init(&philo[i].eat_mutex,NULL);
 	}
 	return ;
@@ -253,7 +264,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	simulation = init_data(argv);
-	pthread_create(&check_dead,NULL,is_anyone_dead,simulation);
+	pthread_create(&check_dead, NULL, is_anyone_dead, simulation);
 	start_thread(simulation);
 	while (i < simulation->number_of_philo)
 	{
