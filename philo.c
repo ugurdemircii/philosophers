@@ -23,7 +23,7 @@ void ft_usleep(int time_ms,t_philo *philo)
 			break ; 
 		}
 		pthread_mutex_unlock(&philo->data->dead_mutex);
-		usleep(100);
+		usleep(500);
 	}
 	return;
 }
@@ -125,12 +125,13 @@ void *is_anyone_dead(void *arg)
 				simulation->dead_flag = 1;
 				pthread_mutex_unlock(&simulation->dead_mutex);
 				pthread_mutex_lock(&simulation->print_mutex);
-				printf("%lu %d is dead\n",ft_get_time() - simulation->start_time,simulation->philo[i].philo_id);
+				printf("%lu %d died\n",ft_get_time() - simulation->start_time,simulation->philo[i].philo_id);
 				pthread_mutex_unlock(&simulation->print_mutex);
 				return NULL;
 			}
 			pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
 		}
+		usleep(1000);
 	}
 }
 
@@ -176,16 +177,13 @@ void *philo_loop(void *arg)
 void start_thread(t_data *simulation)
 {
 	int i;
-	int left_fork;
-	int right_fork;
-	pthread_t check_dead;
 
 	i = -1;
 	while (++i < simulation->number_of_philo)
 	{
-		if (i % 2 == 1)
-			usleep(300);
 		pthread_create(&simulation->philo[i].thread,NULL,philo_loop,&simulation->philo[i]);
+		if (i % 2 == 1)
+			usleep(1000);
 	}
 }
 
@@ -214,7 +212,7 @@ void one_philo(t_data *simulation)
 {
 	printf("%lu 1 has taken a fork\n",ft_get_time() - simulation->start_time);
 	usleep(simulation->time_to_die * 1000);
-	printf("%lu 1 is died\n",ft_get_time() - simulation->start_time);
+	printf("%lu 1 died\n",ft_get_time() - simulation->start_time);
 	free(simulation);
 	exit (0);
 }
