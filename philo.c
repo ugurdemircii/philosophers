@@ -30,15 +30,11 @@ void ft_usleep(int time_ms,t_philo *philo)
 
 void safe_mutex_print(char *str,t_philo *philo)
 {
-	pthread_mutex_lock(&philo->data->dead_mutex);
-    if (philo->data->dead_flag == 1)
-	{
-		pthread_mutex_unlock(&philo->data->dead_mutex);
-        return ;
-	}
-	pthread_mutex_unlock(&philo->data->dead_mutex);
 	pthread_mutex_lock(&philo->data->print_mutex);
-	printf("%lu %d %s\n",ft_get_time() - philo->data->start_time ,philo->philo_id,str);
+	pthread_mutex_lock(&philo->data->dead_mutex);
+	if (philo->data->dead_flag == 0)
+		printf("%lu %d %s\n",ft_get_time() - philo->data->start_time ,philo->philo_id,str);
+	pthread_mutex_unlock(&philo->data->dead_mutex);
 	pthread_mutex_unlock(&philo->data->print_mutex);
 }
 void think_and_sleep(t_philo *philo)
@@ -51,7 +47,6 @@ void think_and_sleep(t_philo *philo)
 
 void take_fork_and_eat(t_philo *philo)
 {
-	// printf("debug1\n");
 	if (philo->philo_id % 2 == 0)
 	{
 		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
@@ -61,8 +56,7 @@ void take_fork_and_eat(t_philo *philo)
 	}
 	else
 	{
-		// printf("debug\n");
-		// usleep(500);
+		usleep(500);
 		pthread_mutex_lock(&philo->data->forks[philo->right_forkk]);			
 		safe_mutex_print("has taken a fork",philo);
 		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
@@ -71,9 +65,9 @@ void take_fork_and_eat(t_philo *philo)
 	pthread_mutex_lock(&philo->eat_mutex);
 	safe_mutex_print("is eating",philo);
 	philo->last_eat_time = ft_get_time();
-	ft_usleep(philo->data->time_to_eat,philo);
 	philo->eat_count++;
 	pthread_mutex_unlock(&philo->eat_mutex);
+	ft_usleep(philo->data->time_to_eat,philo);
     pthread_mutex_unlock(&philo->data->forks[philo->right_forkk]);
     pthread_mutex_unlock(&philo->data->forks[philo->left_forkk]);
 }
@@ -182,8 +176,9 @@ void start_thread(t_data *simulation)
 	while (++i < simulation->number_of_philo)
 	{
 		pthread_create(&simulation->philo[i].thread,NULL,philo_loop,&simulation->philo[i]);
-		if (i % 2 == 1)
-			usleep(1000);
+		usleep(1);
+		// if (i % 2 == 1)
+		// 	usleep(1000);
 	}
 }
 
@@ -268,8 +263,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	simulation = init_data(argv);
-	pthread_create(&check_dead, NULL, is_anyone_dead, simulation);
 	start_thread(simulation);
+	pthread_create(&check_dead, NULL, is_anyone_dead, simulation);
 	while (i < simulation->number_of_philo)
 	{
 		pthread_join(simulation->philo[i].thread,NULL);
