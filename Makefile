@@ -1,14 +1,15 @@
 NAME = philo
 
 CC = cc 
-CFLAGS = 
+CFLAGS = -Wall -Wextra -Werror
 
 
 SRCS = 	input_parse.c \
         philo.c \
 		philo_utils.c \
 		init.c \
-		dead.c
+		dead.c \
+		utils_2.c
 
 OBJS = $(SRCS:.c=.o)
 RM = rm -f

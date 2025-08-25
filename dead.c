@@ -1,7 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   dead.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/25 07:24:37 by udemirci          #+#    #+#             */
+/*   Updated: 2025/08/25 08:39:33 by udemirci         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-
-int is_simulation_end(t_philo *philo)
+int	is_simulation_end(t_philo *philo)
 {
 	pthread_mutex_lock(&philo->eat_mutex);
 	if (philo->data->must_eat != 0)
@@ -9,7 +20,7 @@ int is_simulation_end(t_philo *philo)
 		if (philo->data->must_eat == philo->eat_count)
 		{
 			pthread_mutex_unlock(&philo->eat_mutex);
-			return (1);	
+			return (1);
 		}
 	}
 	pthread_mutex_unlock(&philo->eat_mutex);
@@ -23,14 +34,14 @@ int is_simulation_end(t_philo *philo)
 	return (0);
 }
 
-int check_must_eat_count(t_data *simulation)
+int	check_must_eat_count(t_data *simulation)
 {
-	int i;
-	int check_everyone;
+	int	i;
+	int	check_everyone;
 
 	i = -1;
 	check_everyone = 0;
-	while(++i < simulation->number_of_philo)
+	while (++i < simulation->number_of_philo)
 	{
 		pthread_mutex_lock(&simulation->philo[i].eat_mutex);
 		if (simulation->philo[i].eat_count >= simulation->must_eat)
@@ -46,43 +57,39 @@ int check_must_eat_count(t_data *simulation)
 	}
 	return (0);
 }
-void announce_died(t_data *simulation)
+
+void	announce_died(t_data *simulation, int i)
 {
 	pthread_mutex_lock(&simulation->dead_mutex);
 	simulation->dead_flag = 1;
 	pthread_mutex_unlock(&simulation->dead_mutex);
 	pthread_mutex_lock(&simulation->print_mutex);
-	printf("%lld %d died\n",ft_get_time() - simulation->start_time,simulation->philo[i].philo_id);
+	if (simulation->number_of_philo != 1)
+		printf("%lld %d died\n", ft_get_time() - simulation->start_time,
+			simulation->philo[i].philo_id);
 	pthread_mutex_unlock(&simulation->print_mutex);
 }
 
-void *is_anyone_dead(void *arg)
+void	*is_anyone_dead(void *arg)
 {
-	t_data *simulation;
-	int i;
-	
+	t_data	*simulation;
+	int		i;
+
 	simulation = (t_data *)arg;
 	while (1)
 	{
 		i = -1;
-		if (simulation->must_eat != 0)
-		{
-			if (check_must_eat_count(simulation))
-				return NULL;
-		}
-		while(++i < simulation->number_of_philo)
+		if (simulation->must_eat != 0 && check_must_eat_count(simulation) == 1)
+			return (NULL);
+		while (++i < simulation->number_of_philo)
 		{
 			pthread_mutex_lock(&simulation->philo[i].eat_mutex);
-			if (ft_get_time() - simulation->philo[i].last_eat_time >= simulation->time_to_die)
+			if (ft_get_time() - simulation->philo[i].last_eat_time
+				>= simulation->time_to_die)
 			{
 				pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
-				pthread_mutex_lock(&simulation->dead_mutex);
-				simulation->dead_flag = 1;
-				pthread_mutex_unlock(&simulation->dead_mutex);
-				pthread_mutex_lock(&simulation->print_mutex);
-				printf("%lld %d died\n",ft_get_time() - simulation->start_time,simulation->philo[i].philo_id);
-				pthread_mutex_unlock(&simulation->print_mutex);
-				return NULL;
+				announce_died(simulation, i);
+				return (NULL);
 			}
 			pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
 		}
