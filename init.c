@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:18:37 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 08:44:07 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 13:32:04 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ static void	init_philo(t_data *simulation)
 	i = -1;
 	simulation->philo = ft_calloc(1, sizeof(t_philo)
 			* simulation->number_of_philo);
+	if (!simulation->philo)
+		return (NULL);
 	philo = simulation->philo;
 	while (++i < simulation->number_of_philo)
 	{
@@ -50,7 +52,7 @@ static void	put_data(t_data *simulation, char **argv)
 	if (argv[5])
 	{
 		if (ft_atoi(argv[5]) != 0)
-			simulation->must_eat = atoi(argv[5]);
+			simulation->must_eat = ft_atoi(argv[5]);
 		else
 		{
 			free(simulation);
@@ -68,9 +70,13 @@ t_data	*init_data(char **argv)
 
 	i = 0;
 	simulation = ft_calloc(1, sizeof(t_data));
+	if (!simulation)
+		return (NULL);
 	put_data(simulation, argv);
 	simulation->forks = ft_calloc(1, sizeof(pthread_mutex_t)
 			* simulation->number_of_philo);
+	if (!simulation->forks)
+		return (NULL);
 	while (i < simulation->number_of_philo)
 	{
 		pthread_mutex_init(&simulation->forks[i], NULL);

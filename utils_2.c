@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 08:28:47 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 08:31:35 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 12:59:32 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,14 +36,12 @@ int	ft_overflow(char *str)
 		str++;
 	if (*str == '+')
 		str++;
-	while (*str)
+	while (*str >= '0' && *str <= '9')
 	{
 		digit = *str - '0';
-		result = result * 10 + digit;
-		if (result > INT_MAX)
+		if (result > (INT_MAX - digit) / 10)
 			return (-1);
-		if ((*str == ' ') || (*str >= 9 && *str <= 13))
-			break ;
+		result = result * 10 + digit;
 		str++;
 	}
 	return (0);
@@ -52,23 +50,18 @@ int	ft_overflow(char *str)
 int	ft_atoi(char *str)
 {
 	int	count;
-	int	sign;
 
 	count = 0;
-	sign = 1;
-	while (*str == ' ' || *str == '\r' || *str == '\t' || *str == '\v')
+	while ((*str == ' ') || (*str >= 9 && *str <= 13))
 		str++;
-	if (*str == '-')
-	{
-		sign = -1;
+	if (*str == '+')
 		str++;
-	}
 	while (*str >= '0' && *str <= '9')
 	{
 		count = count * 10 + (*str - 48);
 		str++;
 	}
-	return (sign * count);
+	return (count);
 }
 
 void	*ft_calloc(size_t count, size_t size)
