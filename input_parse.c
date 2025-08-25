@@ -12,7 +12,53 @@ int ft_strlen(char *str)
     return (i);
 }
 
-int space_clear(char *str)
+int has_int_overflow(char *str) 
+{
+    long result;
+    int digit;
+    
+    result = 0;
+    while ((*str == ' ') || (*str >= 9 && *str <= 13)) 
+        str++;
+    if (*str == '+') 
+        str++;
+    while (*str) 
+    {
+        digit = *str - '0';
+        result = result * 10 + digit;
+        if (result > INT_MAX) 
+            return (-1);
+        if ((*str == ' ') || (*str >= 9 && *str <= 13))
+            break;
+        str++;
+    }
+    return (0);
+}
+
+
+int	ft_atoi(char *str)
+{
+	int	count;
+	int	sign;
+
+	count = 0;
+	sign = 1;
+	while (*str == ' ' || *str == '\r' || *str == '\t' || *str == '\v')
+		str++;
+	if (*str == '-')
+	{
+		sign = -1;
+		str++;
+	}
+	while (*str >= '0' && *str <= '9')
+	{
+		count = count * 10 + (*str - 48);
+		str++;
+	}
+	return (sign * count);
+}
+
+int space_check(char *str)
 {
     int i;
     char *new_str;
@@ -68,7 +114,9 @@ int input_parse(char **argv)
     {
         if (char_check(argv[i + 1]) == -1)
             return (-1);
-        if (space_clear(argv[i + 1]) == -1)
+        if (space_check(argv[i + 1]) == -1)
+            return (-1);
+        if (has_int_overflow(argv[i + 1]) == -1)
             return (-1);
         i++;
     }

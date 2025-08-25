@@ -5,7 +5,10 @@ CFLAGS =
 
 
 SRCS = 	input_parse.c \
-        philo.c 
+        philo.c \
+		philo_utils.c \
+		init.c \
+		dead.c
 
 OBJS = $(SRCS:.c=.o)
 RM = rm -f
