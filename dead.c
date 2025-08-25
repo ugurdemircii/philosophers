@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:24:37 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 08:39:33 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 08:44:47 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int	is_simulation_end(t_philo *philo)
 	return (0);
 }
 
-int	check_must_eat_count(t_data *simulation)
+static int	check_must_eat_count(t_data *simulation)
 {
 	int	i;
 	int	check_everyone;
@@ -58,7 +58,7 @@ int	check_must_eat_count(t_data *simulation)
 	return (0);
 }
 
-void	announce_died(t_data *simulation, int i)
+static void	announce_died(t_data *simulation, int i)
 {
 	pthread_mutex_lock(&simulation->dead_mutex);
 	simulation->dead_flag = 1;

@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:29:55 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 07:36:58 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 08:45:45 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ void	ft_usleep(int time_ms, t_philo *philo)
 	return ;
 }
 
-void	*one_philo(void *arg)
+static void	*one_philo(void *arg)
 {
 	t_philo	*philo;
 	t_data	*simulation;

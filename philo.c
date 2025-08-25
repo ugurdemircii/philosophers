@@ -6,20 +6,20 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:37:20 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 07:43:43 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 08:47:34 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	think_and_sleep(t_philo *philo)
+static void	think_and_sleep(t_philo *philo)
 {
 	safe_mutex_print("is sleeping", philo);
 	ft_usleep(philo->data->time_to_sleep, philo);
 	safe_mutex_print("is thinking", philo);
 }
 
-void	take_fork_and_eat(t_philo *philo)
+static void	take_fork_and_eat(t_philo *philo)
 {
 	if (philo->philo_id % 2 == 0)
 	{
@@ -63,7 +63,7 @@ void	*philo_loop(void *arg)
 	return (NULL);
 }
 
-void	free_and_destroy(t_data *simulation)
+static void	free_and_destroy(t_data *simulation)
 {
 	int	i;
 

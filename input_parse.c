@@ -6,25 +6,13 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:44:54 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 08:28:27 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 08:43:08 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	ft_strlen(char *str)
-{
-	int	i;
-
-	i = 0;
-	if (str == NULL || *str == '\0')
-		return (0);
-	while (str[i])
-		i++;
-	return (i);
-}
-
-int	space_check(char *str)
+static int	space_check(char *str)
 {
 	int		i;
 
@@ -45,7 +33,7 @@ int	space_check(char *str)
 	return (0);
 }
 
-int	char_check(char *str)
+static int	char_check(char *str)
 {
 	int	i;
 	int	sign_count;

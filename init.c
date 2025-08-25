@@ -6,13 +6,13 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:18:37 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 08:32:40 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/25 08:44:07 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	init_philo(t_data *simulation)
+static void	init_philo(t_data *simulation)
 {
 	int		i;
 	t_philo	*philo;
@@ -34,7 +34,7 @@ void	init_philo(t_data *simulation)
 	return ;
 }
 
-void	put_data(t_data *simulation, char **argv)
+static void	put_data(t_data *simulation, char **argv)
 {
 	simulation->start_time = ft_get_time();
 	simulation->number_of_philo = ft_atoi(argv[1]);
