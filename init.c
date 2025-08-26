@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:18:37 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 13:32:04 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/27 01:41:08 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static void	init_philo(t_data *simulation)
 	simulation->philo = ft_calloc(1, sizeof(t_philo)
 			* simulation->number_of_philo);
 	if (!simulation->philo)
-		return (NULL);
+		return ;
 	philo = simulation->philo;
 	while (++i < simulation->number_of_philo)
 	{

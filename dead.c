@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:24:37 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 09:40:05 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/27 02:08:22 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,6 @@ void	*is_anyone_dead(void *arg)
 			}
 			pthread_mutex_unlock(&simulation->philo[i].eat_mutex);
 		}
-		usleep(1000);
+		usleep(100);
 	}
 }

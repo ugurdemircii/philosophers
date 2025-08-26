@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:29:55 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 09:44:48 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/27 02:18:43 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void	ft_usleep(int time_ms, t_philo *philo)
 			break ;
 		}
 		pthread_mutex_unlock(&philo->data->dead_mutex);
-		usleep(500);
+		usleep(100);
 	}
 	return ;
 }
@@ -84,6 +84,6 @@ void	start_thread(t_data *simulation)
 	{
 		pthread_create(&simulation->philo[i].thread, NULL,
 			philo_loop, &simulation->philo[i]);
-		usleep(1);
+		usleep(500);
 	}
 }

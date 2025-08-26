@@ -6,7 +6,7 @@
 /*   By: udemirci <udemirci@student.42istanbul.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:37:20 by udemirci          #+#    #+#             */
-/*   Updated: 2025/08/25 12:35:49 by udemirci         ###   ########.fr       */
+/*   Updated: 2025/08/27 02:19:06 by udemirci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,29 +21,31 @@ static void	think_and_sleep(t_philo *philo)
 
 static void	take_fork_and_eat(t_philo *philo)
 {
-	if (philo->philo_id % 2 == 0)
+	int	first_fork;
+	int	second_fork;
+
+	if (philo->left_forkk < philo->right_forkk)
 	{
-		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
-		safe_mutex_print("has taken a fork", philo);
-		pthread_mutex_lock(&philo->data->forks[philo->right_forkk]);
-		safe_mutex_print("has taken a fork", philo);
+		first_fork = philo->left_forkk;
+		second_fork = philo->right_forkk;
 	}
 	else
 	{
-		usleep(500);
-		pthread_mutex_lock(&philo->data->forks[philo->right_forkk]);
-		safe_mutex_print("has taken a fork", philo);
-		pthread_mutex_lock(&philo->data->forks[philo->left_forkk]);
-		safe_mutex_print("has taken a fork", philo);
+		first_fork = philo->right_forkk;
+		second_fork = philo->left_forkk;
 	}
+	pthread_mutex_lock(&philo->data->forks[first_fork]);
+	safe_mutex_print("has taken a fork", philo);
+	pthread_mutex_lock(&philo->data->forks[second_fork]);
+	safe_mutex_print("has taken a fork", philo);
 	pthread_mutex_lock(&philo->eat_mutex);
 	safe_mutex_print("is eating", philo);
 	philo->last_eat_time = ft_get_time();
 	philo->eat_count++;
 	pthread_mutex_unlock(&philo->eat_mutex);
 	ft_usleep(philo->data->time_to_eat, philo);
-	pthread_mutex_unlock(&philo->data->forks[philo->right_forkk]);
-	pthread_mutex_unlock(&philo->data->forks[philo->left_forkk]);
+	pthread_mutex_unlock(&philo->data->forks[second_fork]);
+	pthread_mutex_unlock(&philo->data->forks[first_fork]);
 }
 
 void	*philo_loop(void *arg)
@@ -59,6 +61,7 @@ void	*philo_loop(void *arg)
 		if (is_simulation_end(philo))
 			break ;
 		think_and_sleep(philo);
+		
 	}
 	return (NULL);
 }
@@ -89,7 +92,7 @@ int	main(int argc, char **argv)
 
 	i = 0;
 	if ((argc != 5 && argc != 6) || input_parse(argv) == -1)
-		exit(1);
+		return(1);
 	simulation = init_data(argv);
 	start_thread(simulation);
 	pthread_create(&check_dead, NULL, is_anyone_dead, simulation);
